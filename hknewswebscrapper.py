@@ -24,27 +24,9 @@ formatter = logging.Formatter('[%(asctime)s.%(msecs)03d] (%(process)d:%(thread)d
 formatter.converter = custom_time
 default_handler.setFormatter(formatter)
 
-# from util import OrderManager, MailHandler, TimeUtil
-# from util import KiteConnHandler, OrderInfo
-
-
-class CustomJSONEncoder(JSONEncoder):
-
-    def default(self, obj):
-        try:
-            if isinstance(obj, datetime.date):
-                return obj.strftime("%Y/%m/%d")
-            iterable = iter(obj)
-        except TypeError:
-            pass
-        else:
-            return list(iterable)
-        return JSONEncoder.default(self, obj)
-
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
-app.json_encoder = CustomJSONEncoder
 app.logger.info("Starting Janus!!!")
 
 
