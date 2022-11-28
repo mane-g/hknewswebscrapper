@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>HK News Web Scrapper</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
+    <style>
+    body {font-family: Arial;}
+
+    /* Style the tab */
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+    }
+
+    /* Style the buttons inside the tab */
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+      font-size: 17px;
+    }
+
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+      background-color: #ddd;
+    }
+
+    /* Create an active/current tablink class */
+    .tab button.active {
+      background-color: #ccc;
+    }
+
+    /* Style the tab content */
+    .tabcontent {
+      display: none;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+
+    .modal {
+      display:    none;
+      position:   fixed;
+      z-index:    1000;
+      top:        0;
+      left:       0;
+      height:     100%;
+      width:      100%;
+      background: rgba( 255, 255, 255, .8 )
+                  url('http://i.stack.imgur.com/FhHRx.gif')
+                  50% 50%
+                  no-repeat;
+    }
+
+    body.loading .modal {
+        overflow: hidden;
+    }
+
+    body.loading .modal {
+        display: block;
+    }
+    </style>
+    <script>
+    (function($) {
+      $(document).ready(function() {
+          console.log("IN the load")
+          $("#threshold").prop('disabled', true);
+          $("#transactions_table_div").hide();
+
+          $("#trend_tab").trigger("click");
+          $body = $("body");
+       });
+
+       $body = $("body");
+       $(document).on({
+          ajaxStart: function() {
+            $body.addClass("loading");
+          },
+          ajaxStop: function() { $body.removeClass("loading");},
+       });
+    })(jQuery);
+    </script>
+
+  </head>
+  <body>
+    <div class="container-well" style="width: 90%; margin: auto;">
+      <div class="tab" id="tabs">
+        <button class="tablinks active" id="trend_tab">Trend Plot</button>
+        <button class="tablinks" id="transaction_tab">Transaction</button>
+      </div>
+
+      <form class="well form-horizontal" action=" " method="get" id="input_form">
+          <fieldset>
+            <div class="form-group">
+              <label class="col-md-2 control-label">Stock Code</label>
+              <div class="col-md-2 inputGroupContainer">
+                <div class="input-group">
+                  <input  name="stock_code" id="stock_code" value="00001" class="form-control">
+                </div>
+              </div>
+              <label class="col-md-1 control-label">Start Date</label>
+              <div class="col-md-2 inputGroupContainer">
+                <div class="input-group">
+                  <input  name="start_date" id="start_date" class="form-control" type="date">
+                </div>
+              </div>
+              <label class="col-md-1 control-label">End Date</label>
+              <div class="col-md-2 inputGroupContainer">
+                <div class="input-group">
+                  <input  name="end_date" id="end_date" class="form-control" type="date">
+                </div>
+              </div>
+            </div>
+            <div class="form-group" id="threshold_id">
+              <label class="col-md-2 control-label">Threshold %</label>
+              <div class="col-md-2 inputGroupContainer">
+                <div class="input-group">
+                  <input  name="threshold" id="threshold" value="1" class="form-control">
+                </div>
+              </div>
+              <div class="col-md-6 inputGroupContainer">
+                <button type="button" id="submit" class="btn btn-success btn-lg pull-right">Submit</button>
+              </div>
+            </div>
+          </fieldset>
+      </form>
+
+      <div id="trend_plot_chart" style="height: 120%;"></div>
+
+      <div id="transactions_table_div">
+        <table id="transactions_table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Buyer ID</th>
+                    <th>Buyer Name</th>
+                    <th>Seller ID</th>
+                    <th>Seller Name</th>
+                    <th>Transaction %</th>
+                </tr>
+            </thead>
+        </table>
+      </div>
+
+      <div id="trends_table_div">
+        <table id="trends_table">
+        </table>
+      </div>
+    </div>
+
+    <div class="modal"></div>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+
+    <script>
+     jQuery(document).ajaxStart(function(){
+        $body.addClass("loading");
+     });
+
+     jQuery(document).ajaxStop(function(){
+        $body.removeClass("loading");
+     });
+
+     $('#trend_tab').on('click', function() {
+        console.log("In the click event")
+        $("#threshold").prop('disabled', true);
+        $(this).data('clicked', true);
+        $('#transaction_tab').data('clicked', false);
+
+        $('.tablinks').removeClass('active');
+        $(this).addClass('active');
+
+        $("#trend_plot_chart").show();
+        $("#transactions_table_div").hide();
+
+        $("#trends_table_div").show();
+     });
+
+     $('#transaction_tab').on('click', function() {
+        $("#threshold").prop('disabled', false);
+        $(this).data('clicked', true);
+        $('#trend_tab').data('clicked', false);
+
+        $('.tablinks').removeClass('active');
+        $(this).addClass('active');
+
+        $("#trend_plot_chart").hide();
+        $("#trends_table_div").hide();
+
+        $('#transactions_table').DataTable();
+        $("#transactions_table_div").show();
+     });
+
+     $('#submit').on('click', function() {
+        console.log("Entering " + $('#input_form').serialize())
+        console.log($('#trend_tab').data('clicked'))
+        if ($('#trend_tab').data('clicked')) {
+          $.ajax({
+             type: "POST",
+             url: "trend_plot/",
+             data: $('#input_form').serialize(),
+             success: function(data)
+             {
+                console.log("SUCCESS")
+                var plot_report = []
+                var table_columns = []
+                var table_data = []
+                $.each(data, function(index, value) {
+                  if (plot_report == 0) {
+                    temp_data = ['Date']
+                    table_columns.push({"title": "Date"})
+                    $.each(value['Participant ID'], function(index, participant) {
+                      temp_data.push(participant)
+                      table_columns.push({"title": participant})
+                    });
+                    plot_report.push(temp_data)
+                  }
+                  temp_data = [index]
+                  $.each(value['Holdings'], function(index, holding) {
+                    temp_data.push(holding)
+                  });
+                  plot_report.push(temp_data)
+                  table_data.push(temp_data)
+                });
+
+                console.log("Plot report", plot_report)
+                var data = google.visualization.arrayToDataTable(plot_report);
+                var options = {
+                  title: 'Shareholding Pattern',
+                  curveType: 'function',
+                  legend: { position: 'right' },
+                  width: 1000,
+                  height: 600,
+                };
+
+                var chart = new google.visualization.LineChart(document.getElementById('trend_plot_chart'));
+                chart.draw(data, options);
+
+                console.log("table columns", table_columns)
+
+                console.log("table data", table_data)
+
+                if ($.fn.DataTable.isDataTable('#trends_table') ) {
+                  $('#trends_table').DataTable().destroy();
+                }
+                $('#trends_table').dataTable({
+                    "data": table_data,
+                    "columns": table_columns,
+
+                });
+             },
+             error: function(request, status, error)
+             {
+               console.log("ERROR")
+               console.log(request, status, error)
+               alert(request.responseText);
+             }
+          });
+        }
+        if ($('#transaction_tab').data('clicked')) {
+          $.ajax({
+             type: "POST",
+             url: "transaction_finder/",
+             data: $('#input_form').serialize(),
+             success: function(data)
+             {
+                console.log(data)
+                var table_data = []
+                $.each(data, function(trans_date, value) {
+                  $.each(value, function(index, row) {
+                    table_data.push([row[0], row[1], row[2], row[7], row[8], row[12]])
+                  });
+                });
+
+                $("#transactions_table").dataTable().fnDestroy();
+
+                console.log(table_data)
+
+                $('#transactions_table').DataTable({
+                    data: table_data
+                });
+             },
+             error: function(request, status, error)
+             {
+               console.log("ERROR")
+               console.log(request, status, error)
+               alert(request.responseText);
+             }
+          });
+        }
+     });
+    </script>
+  </body>
+</html>
