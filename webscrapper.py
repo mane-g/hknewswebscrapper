@@ -97,7 +97,8 @@ def get_transactions(start_date: str, end_date: str, stock_code: str, threshold:
     for dt in pd.date_range(start_date, end_date)[1:]:
         dt = dt.strftime("%Y-%m-%d")
         trans_df = transactions_df[transactions_df['Date'] == dt]
-        trans_df = trans_df.merge(trans_df, how='cross')
+        # trans_df = trans_df.merge(trans_df, how='cross')
+        trans_df = trans_df.assign(key=1).merge(trans_df.assign(key=1), on='key').drop('key', 1)
         trans_df = trans_df[(trans_df['Diff_x'] > 0) & (trans_df['Diff_y'] < 0)]
         trans_df['Exchanged'] = trans_df[['Diff_y', 'Diff_x']].abs().min(axis=1)
         res_dict[dt] = list(trans_df.itertuples(index=False, name=None))

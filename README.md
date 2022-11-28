@@ -1,45 +1,60 @@
-**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**
+PROBLEM:
 
-When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
+By getting the underlying data from the link below, build a single page web app using Python and JavaScript. If you can build it solely in Python, that's fine too.
 
-*We recommend that you open this README in another tab as you perform the tasks below. You can [watch our video](https://youtu.be/0ocf7u76WSo) for a full demo of all the steps in this tutorial. Open the video in a new tab to avoid leaving Bitbucket.*
+https://www.hkexnews.hk/sdw/search/searchsdw.aspx
 
----
+Duration: 1 week from this spec is sent.
 
-## Edit a file
+Deploy the app onto an AWS free-tier
 
-You’ll start by editing this README file to learn how to edit a file in Bitbucket.
+Commit the code to a public Github repo
 
-1. Click **Source** on the left side.
-2. Click the README.md link from the list of files.
-3. Click the **Edit** button.
-4. Delete the following text: *Delete this line to make a change to the README from Bitbucket.*
-5. After making your change, click **Commit** and then **Commit** again in the dialog. The commit page will open and you’ll see the change you just made.
-6. Go back to the **Source** page.
+Pass us the app URL and the Github link
 
----
+Tab 1 - trend plot
 
-## Create a file
+Input:
 
-Next, you’ll add a new file to this repository.
+* Stock code
 
-1. Click the **New file** button at the top of the **Source** page.
-2. Give the file a filename of **contributors.txt**.
-3. Enter your name in the empty file space.
-4. Click **Commit** and then **Commit** again in the dialog.
-5. Go back to the **Source** page.
+* Start date
 
-Before you move on, go ahead and explore the repository. You've already seen the **Source** page, but check out the **Commits**, **Branches**, and **Settings** pages.
+* End date
 
----
+Output
 
-## Clone a repository
+* Plot the "Shareholding" of the top 10 participant as of the end date
 
-Use these steps to clone from SourceTree, our client for using the repository command-line free. Cloning allows you to work on your files locally. If you don't yet have SourceTree, [download and install first](https://www.sourcetreeapp.com/). If you prefer to clone from the command line, see [Clone a repository](https://confluence.atlassian.com/x/4whODQ).
+* Display the data in a table with filter
 
-1. You’ll see the clone button under the **Source** heading. Click that button.
-2. Now click **Check out in SourceTree**. You may need to create a SourceTree account or log in.
-3. When you see the **Clone New** dialog in SourceTree, update the destination path and name if you’d like to and then click **Clone**.
-4. Open the directory you just created to see your repository’s files.
+Tab 2 - transaction finder
 
-Now that you're more familiar with your Bitbucket repository, go ahead and add a new file locally. You can [push your change back to Bitbucket with SourceTree](https://confluence.atlassian.com/x/iqyBMg), or you can [add, commit,](https://confluence.atlassian.com/x/8QhODQ) and [push from the command line](https://confluence.atlassian.com/x/NQ0zDQ).
+Input:
+
+* Stock code
+
+* Start date
+
+* End date
+
+* Threshold % of total number of shares
+
+There could be transaction between two participants and we would like to detect them. The % threshold input the minimum % of the shares exchanged, e.g. if it's set to 1%, please find the participants who increases or decreases >1% of the shares in a day, and list out the participant ID/names who possibly exchange their shares on which day.
+
+
+ASSUMPTION:
+
+Tab 1 - trend plot
+* Get the top 10 holdings for the 'end date'
+* Get holdings for these participants from 'start date' to 'end date', and plot the same
+* Tabular representation of the above data
+
+Tab 2 - transaction finder
+* Find possible transaction between parties where transaction % should be greater than equal to threshold
+* % threshold and respective calculation is done on the absolute level i.e. transactions are eligible only if,
+abs('% holding yesterday' - '% holding today') >= threshold
+
+
+NOTES:
+* Website is not supporting https yet, so please tick to http

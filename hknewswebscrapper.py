@@ -2,6 +2,7 @@ import logging
 import traceback
 import datetime
 import time
+import pandas as pd
 import pickle
 import traceback
 from pytz import timezone, utc
@@ -27,7 +28,7 @@ default_handler.setFormatter(formatter)
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
-app.logger.info("Starting Janus!!!")
+app.logger.info("Starting!!!")
 
 
 def _validate(req, expected_fields):
@@ -36,6 +37,7 @@ def _validate(req, expected_fields):
     if pd.to_datetime(req['end_date']) >= datetime.datetime.today():
         return False, "End date should be T - 1 or lesser"
     return True, ""
+
 
 @app.route("/")
 def start():
