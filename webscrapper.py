@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import concurrent.futures as con
 from collections import defaultdict
+from functools import lru_cache
 import lxml
 import pandas as pd
 import requests
@@ -11,6 +12,7 @@ MAIN_URL = r'https://www.hkexnews.hk/sdw/search/searchsdw.aspx'
 QUERY_URL = r'https://www3.hkexnews.hk/sdw/search/searchsdw.aspx'
 
 
+@lru_cache(maxsize=None)
 def _perform_webscrap(query_date: pd.Timestamp, stock_code: str) -> pd.DataFrame:
     res=requests.get(MAIN_URL)
     bsl = BeautifulSoup(res.text, "lxml")
@@ -50,7 +52,7 @@ def _perform_webscrap(query_date: pd.Timestamp, stock_code: str) -> pd.DataFrame
 
 def _get_shareholding(start_date: str, end_date: str, stock_code: str) -> pd.DataFrame:
     final_df = pd.DataFrame()
-    with con.ThreadPoolExecutor(max_workers=8) as exc:
+    with con.ThreadPoolExecutor(max_workers=max(64, len(pd.date_range(start_date, end_date)))) as exc:
         fut_list = []
         for dt in pd.date_range(start_date, end_date):
             future = exc.submit(_perform_webscrap, dt, stock_code)
